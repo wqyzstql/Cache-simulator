@@ -50,6 +50,7 @@ enum Status{
     S,
     I
 };
+char status_char[] = {'M', 'E', 'S', 'I'};
 struct Core{
     long long cache_start;
     Status status;
@@ -60,6 +61,7 @@ struct Core{
     }
 }core[2];
 void Deal(Operation op){
+	cout<<string(50,'-')<<endl;
     int op_core = op.tar;
     //cout<<op.idx<<" ";
     cout<<"Currently operating on core "<< op_core << endl;
@@ -68,12 +70,14 @@ void Deal(Operation op){
     else cout<<"write.\n";
     long long cache_start = op.addr / 64 * 64;
     core[op_core].cache_start = cache_start;
+    char s_0 = status_char[core[0].status], s_1 = status_char[core[1].status];
     if(core[op_core ^ 1].cache_start == cache_start){ // this segment of memory is occupyed by other core
         if(op.op == 0){ //read
             core[op_core ^ 1].status = S;
             core[op_core].status = S;
         }else {
             core[op_core ^ 1].status = I;
+            core[op_core ^ 1].cache_start = -1;
             core[op_core].status = M;
         }
     }else {//this cache line's status is I by default
@@ -82,9 +86,18 @@ void Deal(Operation op){
             core[op_core].status = M; //write
         }
     }
-
-
-    return;
+	char fs_0 = status_char[core[0].status], fs_1 = status_char[core[1].status];
+	if(core[0].cache_start != -1)
+	cout<<"Core 0's cache save the memory from address "
+		<<core[0].cache_start<<" to address "<<(core[0].cache_start+64)<<endl;
+	else cout<<"There are no memory in Core 0's cache!\n";
+	if(core[1].cache_start != -1)
+	cout<<"Core 1's cache save the memory from address "
+		<<core[1].cache_start<<" to address "<<(core[1].cache_start+64)<<endl;
+	else cout<<"There are no memory in Core 1's cache!\n";
+	cout<<"Core 0's status from "<<s_0<<" to "<<fs_0<<endl;
+    cout<<"Core 1's status from "<<s_1<<" to "<<fs_1<<endl;
+	return;
 }
 
 int main(){
